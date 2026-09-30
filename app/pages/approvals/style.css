@@ -1,0 +1,139 @@
+@import "#app/shared/styles/page.css";
+
+.approvals-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 20rem);
+  gap: var(--space-8);
+  align-items: start;
+}
+
+.ask {
+  border-left: 3px solid var(--type);
+}
+
+.ask .card-body {
+  gap: var(--space-4);
+}
+
+.ask-head {
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-full);
+  background: var(--type-soft, var(--bg-muted));
+  color: var(--type-ink, var(--ink-soft));
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+
+.ask-name {
+  font-weight: var(--weight-semibold);
+}
+
+.ask-when {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.ask-note {
+  margin: 0;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--rule);
+  color: var(--ink-soft);
+}
+
+.ask-facts {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.ask-facts li {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+}
+
+.ask-actions {
+  justify-content: flex-end;
+}
+
+.ask-actions textarea {
+  flex: 1;
+  min-height: 2.5rem;
+}
+
+.side-list {
+  font-size: var(--text-sm);
+}
+
+.side-list li {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--rule-soft);
+}
+
+.side-list li:first-child {
+  border-top: 0;
+}
+
+.side-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 0.45em;
+  border-radius: var(--radius-full);
+  background: var(--type);
+}
+
+.side-dot.is-pending {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--type);
+}
+
+.side-meta {
+  color: var(--ink-dim);
+}
+
+.all-clear {
+  text-align: center;
+  padding: var(--space-10) var(--space-6);
+  color: var(--ink-soft);
+}
+
+.all-clear svg {
+  color: var(--success);
+}
+
+@media (max-width: 56rem) {
+  .approvals-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 40rem) {
+  .ask-actions {
+    flex-wrap: wrap;
+  }
+
+  .ask-actions textarea {
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 48rem) {
+  .link-action {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.5rem;
+  }
+}

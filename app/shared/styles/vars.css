@@ -1,0 +1,97 @@
+@layer tokens {
+  :root {
+    --brand-50: oklch(0.985 0.010 190);
+    --brand-100: oklch(0.96 0.025 190);
+    --brand-200: oklch(0.92 0.048 190);
+    --brand-300: oklch(0.86 0.080 190);
+    --brand-400: oklch(0.76 0.110 190);
+    --brand-500: oklch(0.64 0.110 190);
+    --brand-600: oklch(0.54 0.095 190);
+    --brand-700: oklch(0.44 0.080 190);
+    --brand-800: oklch(0.34 0.062 190);
+    --brand-900: oklch(0.24 0.045 190);
+    --brand-950: oklch(0.16 0.030 190);
+    --accent: var(--brand-600);
+    --accent-deep: var(--brand-700);
+    --accent-soft: var(--brand-50);
+    --accent-ink: #ffffff;
+    --accent-edge: var(--brand-200);
+    --link-c: 0.095;
+    --link-h: 190;
+
+    /* one color per kind of time off: a solid for dots and bars, a soft fill,
+       and an ink that reads on the soft fill */
+    --vacation: oklch(0.62 0.13 235);
+    --vacation-soft: oklch(0.94 0.04 235);
+    --vacation-ink: oklch(0.38 0.11 235);
+    --sick: oklch(0.63 0.16 25);
+    --sick-soft: oklch(0.94 0.04 25);
+    --sick-ink: oklch(0.42 0.14 25);
+    --personal: oklch(0.66 0.13 300);
+    --personal-soft: oklch(0.94 0.04 300);
+    --personal-ink: oklch(0.42 0.13 300);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --accent: var(--brand-400);
+      --accent-deep: var(--brand-300);
+      --accent-soft: var(--brand-900);
+      --accent-ink: var(--brand-950);
+      --accent-edge: var(--brand-700);
+      --vacation-soft: oklch(0.30 0.06 235);
+      --vacation-ink: oklch(0.86 0.07 235);
+      --sick-soft: oklch(0.30 0.06 25);
+      --sick-ink: oklch(0.86 0.07 25);
+      --personal-soft: oklch(0.30 0.06 300);
+      --personal-ink: oklch(0.86 0.07 300);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --accent: var(--brand-400);
+    --accent-deep: var(--brand-300);
+    --accent-soft: var(--brand-900);
+    --accent-ink: var(--brand-950);
+    --accent-edge: var(--brand-700);
+    --vacation-soft: oklch(0.30 0.06 235);
+    --vacation-ink: oklch(0.86 0.07 235);
+    --sick-soft: oklch(0.30 0.06 25);
+    --sick-ink: oklch(0.86 0.07 25);
+    --personal-soft: oklch(0.30 0.06 300);
+    --personal-ink: oklch(0.86 0.07 300);
+  }
+}
+
+/* a pill or chip tinted by the kind of time off it stands for */
+.is-vacation { --type: var(--vacation); --type-soft: var(--vacation-soft); --type-ink: var(--vacation-ink); }
+.is-sick { --type: var(--sick); --type-soft: var(--sick-soft); --type-ink: var(--sick-ink); }
+.is-personal { --type: var(--personal); --type-soft: var(--personal-soft); --type-ink: var(--personal-ink); }
+
+.pill.type-pill {
+  background: var(--type-soft);
+  color: var(--type-ink);
+  border-color: transparent;
+}
+
+.pill.type-pill .pill-dot {
+  background: var(--type);
+}
+
+/* a section heading inside a page, a step below the page title */
+.section-title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: normal;
+  margin: 0;
+}
+
+/* Phones: small controls keep a 40px tap target. */
+@layer tokens {
+  @media (max-width: 48rem) {
+    :root {
+      --button-height-sm: var(--button-height);
+      --input-height-sm: var(--input-height);
+    }
+  }
+}

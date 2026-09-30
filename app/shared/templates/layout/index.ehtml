@@ -1,0 +1,51 @@
+import "./style.css";
+import { redirect } from "@elements/app";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { signout } from "#app/shared/services/auth";
+import type { Person } from "#app/shared/services/auth";
+
+function onSignout() {
+  signout();
+  redirect("/signin");
+}
+
+<Layout (title: string, person: Person, active: string)>
+  <head>
+    <title>{title} · awaywell</title>
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <div class="app">
+      <header class="layout-header">
+        <div class="page-shell layout-header-inner row">
+          <a class="layout-brand row" href={person.role === "manager" ? "/approvals" : "/"}>
+            <BrandMark />
+            awaywell
+          </a>
+
+          <nav class="layout-nav cluster is-xs">
+            <a e:if={person.role === "employee"} href="/" class={[active === "home" && "is-active"]}>My time off</a>
+            <a e:if={person.role === "manager"} href="/approvals" class={[active === "approvals" && "is-active"]}>Approvals</a>
+            <a e:if={person.role === "manager"} href="/calendar" class={[active === "calendar" && "is-active"]}>Team calendar</a>
+          </nav>
+
+          <div class="layout-who row gap-2">
+            <span class="layout-who-name">{person.name}</span>
+            <button class="is-ghost is-sm" onclick={() => onSignout()}>Sign out</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="app-main layout-main">
+        <slot/>
+      </main>
+    </div>
+  </body>
+</Layout>
+
+<BrandMark>
+  <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <circle cx="12" cy="10" r="4.5" fill="currentColor" />
+    <path d="M2.5 18.5c2.4-1.6 4.8-1.6 7.2 0s4.8 1.6 7.2 0 3.6-1.2 4.6-.6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" />
+  </svg>
+</BrandMark>
