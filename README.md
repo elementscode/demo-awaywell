@@ -1,10 +1,12 @@
+![Awaywell, a time off app built with Elements: the team calendar for October, with vacation, sick and personal days in different colors and pending requests striped.](https://elements.dev/demos/01a0f3a8-3881-7fd5-9f2e-8272c870a636/poster?v=2a795814a221)
+
 # Awaywell
 
 > A demo app built with [Elements](https://elements.dev).
 
-Request vacation, sick and personal days, approve or deny them with a comment, track balances, and see who is out on a live team calendar with .ics feeds.
+Request time off, approve it with a comment, track balances by type, and see who is out on a live team calendar with .ics feeds.
 
-**Demo:** [Awaywell](TBD)
+**Demo:** [Awaywell](https://elements.dev/demos/01a0f3a8-3881-7fd5-9f2e-8272c870a636)
 
 ## Agent specs
 
