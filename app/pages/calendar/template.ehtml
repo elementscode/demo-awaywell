@@ -1,0 +1,131 @@
+import "./style.css";
+import type { Listener } from "@elements/app";
+import { Layout } from "#app/shared/templates/layout";
+import type { Person } from "#app/shared/services/auth";
+import { fetchTeamMonth, TYPES, TYPE_LABELS } from "#app/shared/services/timeoff";
+import type { TimeOffRequest, RequestEvent } from "#app/shared/services/timeoff";
+import { addDays, formatMonth, formatRange, parseDay, shiftMonth, toDay } from "#app/shared/format";
+
+export interface CalendarCell {
+  id: string;
+  day: string;
+  num: number;
+  weekday: string;
+  inMonth: boolean;
+  isToday: boolean;
+  isWeekend: boolean;
+}
+
+interface Month {
+  requests: TimeOffRequest[];
+  changed: string;
+}
+
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+/** Every day shown for a month, from the Monday on or before the 1st to the Sunday on or after the last. */
+export function monthCells(month: string, today: string): CalendarCell[] {
+  let first = `${month}-01`;
+  let offset = (parseDay(first).getUTCDay() + 6) % 7;
+  let start = addDays(first, -offset);
+  let last = addDays(`${shiftMonth(month, 1)}-01`, -1);
+  let trailing = 6 - ((parseDay(last).getUTCDay() + 6) % 7);
+  let end = addDays(last, trailing);
+
+  let cells: CalendarCell[] = [];
+  for (let day = start; day <= end; day = addDays(day, 1)) {
+    let dow = (parseDay(day).getUTCDay() + 6) % 7;
+    cells.push({
+      id: day,
+      day,
+      num: parseDay(day).getUTCDate(),
+      weekday: WEEKDAYS[dow],
+      inMonth: day.startsWith(month),
+      isToday: day === today,
+      isWeekend: dow >= 5,
+    });
+  }
+
+  return cells;
+}
+
+export function outOn(day: string, requests: TimeOffRequest[]): TimeOffRequest[] {
+  return requests.filter((r) => r.startDate <= day && r.endDate >= day);
+}
+
+function peopleOut(requests: TimeOffRequest[]): number {
+  return new Set(requests.filter((r) => r.status === "approved").map((r) => r.userId)).size;
+}
+
+function onNotify(month: string, data: Month, e: RequestEvent) {
+  data.requests = fetchTeamMonth(month);
+  data.changed = e.requestId;
+}
+
+function chipTitle(r: TimeOffRequest): string {
+  return `${r.userName}: ${TYPE_LABELS[r.type]}, ${formatRange(r.startDate, r.endDate)}${r.status === "pending" ? " (pending)" : ""}${r.note ? `. ${r.note}` : ""}`;
+}
+
+<html class="page-calendar" (
+  person: Person,
+  month: string,
+  today: string,
+  initial: TimeOffRequest[],
+  listener: Listener<RequestEvent>,
+  private data: Month = { requests: initial, changed: "" },
+) oninit={() => listener.on("notify", (e) => onNotify(month, data, e))}>
+  <Layout title={`Team calendar · ${formatMonth(month)}`} {person} active="calendar">
+    <div class="page-shell stack is-lg">
+      <div class="cal-head row">
+        <div class="row gap-3">
+          <div class="row gap-1">
+            <a class="button is-ghost is-sm" href={`/calendar?month=${shiftMonth(month, -1)}`} aria-label="Previous month">
+              <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </a>
+            <a class="button is-ghost is-sm" href={`/calendar?month=${shiftMonth(month, 1)}`} aria-label="Next month">
+              <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </a>
+          </div>
+          <h1>{formatMonth(month)}</h1>
+          <a e:if={!today.startsWith(month)} class="button is-sm" href="/calendar">Today</a>
+        </div>
+
+        <div class="cal-legend cluster is-md">
+          <span e:for={t of TYPES} class={`is-${t}`}><i class="cal-swatch" aria-hidden="true"></i>{TYPE_LABELS[t]}</span>
+          <span><i class="cal-swatch is-pending" aria-hidden="true"></i>Pending</span>
+          <span class="live-dot">Live</span>
+        </div>
+      </div>
+
+      <p class="cal-summary">
+        {peopleOut(data.requests)} of your team {peopleOut(data.requests) === 1 ? "is" : "are"} out at some point this month;
+        {data.requests.filter((r) => r.status === "pending").length} pending.
+      </p>
+
+      <div class="cal" role="grid" aria-label={`Team calendar for ${formatMonth(month)}`}>
+        <div class="cal-weekdays" role="row">
+          <div e:for={w of WEEKDAYS} id={w} role="columnheader">{w}</div>
+        </div>
+        <div class="cal-grid">
+          <div e:for={cell of monthCells(month, today)}
+               role="gridcell"
+               class={[
+                 "cal-day",
+                 !cell.inMonth && "is-outside",
+                 cell.isToday && "is-today",
+                 cell.isWeekend && "is-weekend",
+                 outOn(cell.day, data.requests).length > 0 && "has-events",
+               ]}>
+            <span class="cal-weekday-label">{cell.weekday}</span>
+            <span class="cal-num">{cell.num}</span>
+            <span e:for={r of cell.isWeekend ? [] : outOn(cell.day, data.requests)}
+                  class={["chip", `is-${r.type}`, r.status === "pending" && "is-pending", r.id === data.changed && "is-new"]}
+                  title={chipTitle(r)}>
+              {r.userName.split(" ")[0]}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Layout>
+</html>

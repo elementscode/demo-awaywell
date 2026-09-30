@@ -1,0 +1,147 @@
+import "./style.css";
+import { redirect } from "@elements/app";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { signin, DEMO_PASSWORD } from "#app/shared/services/auth";
+import type { DemoLogin } from "#app/shared/services/auth";
+import { initials } from "#app/shared/format";
+
+interface SigninForm {
+  email: string;
+  password: string;
+  error: string;
+  busy: boolean;
+}
+
+interface DemoTeam {
+  id: string;
+  name: string;
+  people: DemoLogin[];
+}
+
+function onSubmit(form: SigninForm) {
+  form.busy = true;
+
+  try {
+    let home = signin(form.email, form.password);
+    form.error = "";
+    redirect(home);
+  } catch (err: any) {
+    form.error = err.message;
+    form.busy = false;
+  }
+}
+
+function onPickDemo(form: SigninForm, login: DemoLogin) {
+  form.email = login.email;
+  form.password = DEMO_PASSWORD;
+  onSubmit(form);
+}
+
+export function groupByTeam(logins: DemoLogin[]): DemoTeam[] {
+  let teams: DemoTeam[] = [];
+
+  for (let login of logins) {
+    let team = teams.find((t) => t.name === login.team);
+    if (!team) {
+      team = { id: login.team, name: login.team, people: [] };
+      teams.push(team);
+    }
+
+    team.people.push(login);
+  }
+
+  return teams;
+}
+
+<html lang="en" class="page-signin" (
+  logins: DemoLogin[],
+  private form: SigninForm = { email: "", password: "", error: "", busy: false },
+)>
+  <head>
+    <title>Sign in · awaywell</title>
+    <meta name="description" content="Request time off and see who is out.">
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <main class="page-shell signin-main">
+      <div class="signin-grid">
+        <div class="stack is-lg">
+          <div class="signin-brand row">
+            <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <circle cx="12" cy="10" r="4.5" fill="currentColor" />
+              <path d="M2.5 18.5c2.4-1.6 4.8-1.6 7.2 0s4.8 1.6 7.2 0 3.6-1.2 4.6-.6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" />
+            </svg>
+            awaywell
+          </div>
+
+          <div class="stack is-xs">
+            <h1>Sign in</h1>
+            <p class="text-ink-soft">Request time off, see your balance, and know who is out.</p>
+          </div>
+
+          <div class="card signin-card">
+            <div class="card-body">
+              <form class="stack" onsubmit={() => onSubmit(form)}>
+                <div e:if={form.error} class="callout is-danger" role="alert">{form.error}</div>
+
+                <div class="field">
+                  <label for="email">Email</label>
+                  <input id="email"
+                         name="email"
+                         type="email"
+                         value={form.email}
+                         autocomplete="email"
+                         autocapitalize="none"
+                         spellcheck={false}
+                         placeholder="you@company.com"
+                         required>
+                </div>
+
+                <div class="field">
+                  <label for="password">Password</label>
+                  <input id="password"
+                         name="password"
+                         type="password"
+                         value={form.password}
+                         autocomplete="current-password"
+                         required>
+                </div>
+
+                <button type="submit" class={["is-primary is-block", form.busy && "is-loading"]} disabled={form.busy}>Sign in</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <section e:if={logins.length} class="stack">
+          <div class="stack is-xs">
+            <h2>Demo accounts</h2>
+            <p class="text-ink-soft text-sm">
+              Click anyone to sign in as them. Every account uses the password <code>{DEMO_PASSWORD}</code>.
+            </p>
+          </div>
+
+          <div>
+            <div e:for={team of groupByTeam(logins)} class="demo-team stack is-sm">
+              <p class="eyebrow">{team.name}'s team</p>
+              <div class="demo-list">
+                <button e:for={login of team.people}
+                        type="button"
+                        title={login.email}
+                        class={["demo-login", login.role === "manager" && "is-manager"]}
+                        disabled={form.busy}
+                        onclick={() => onPickDemo(form, login)}>
+                  <span class="demo-avatar" aria-hidden="true">{initials(login.name)}</span>
+                  <span class="demo-text">
+                    <span class="demo-name">{login.name}</span>
+                    <span class={["demo-email", login.role === "manager" && "is-role"]}>{login.role === "manager" ? "Manager" : login.email}</span>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
