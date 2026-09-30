@@ -1,0 +1,175 @@
+import "./style.css";
+import type { Listener } from "@elements/app";
+import { Layout } from "#app/shared/templates/layout";
+import type { Person } from "#app/shared/services/auth";
+import { decideRequest, fetchApprovals, TYPE_LABELS } from "#app/shared/services/timeoff";
+import type { Approvals, PendingRequest, TimeOffRequest, RequestEvent } from "#app/shared/services/timeoff";
+import { formatRange, formatDays, initials, STATUS_PILLS } from "#app/shared/format";
+
+interface Decision {
+  comment: string;
+  busy: boolean;
+  error: string;
+}
+
+function onDecide(r: PendingRequest, decision: "approved" | "denied", draft: Decision, data: { value: Approvals }) {
+  draft.busy = true;
+  draft.error = "";
+
+  try {
+    decideRequest(r.id, decision, draft.comment);
+    data.value = fetchApprovals();
+  } catch (err: any) {
+    draft.error = err.message;
+    draft.busy = false;
+  }
+}
+
+async function onCopy(url: string, copied: { value: boolean }) {
+  await navigator.clipboard.writeText(url);
+  copied.value = true;
+  setTimeout(() => copied.value = false, 1500);
+}
+
+/** Teammates out at the same time as a request, so a manager sees the clash before approving. */
+function overlapping(r: TimeOffRequest, upcoming: TimeOffRequest[]): TimeOffRequest[] {
+  return upcoming.filter((o) => o.userId !== r.userId && o.startDate <= r.endDate && o.endDate >= r.startDate);
+}
+
+function firstName(name: string): string {
+  return name.split(" ")[0];
+}
+
+<html class="page-approvals" (
+  person: Person,
+  feedUrl: string,
+  initial: Approvals,
+  listener: Listener<RequestEvent>,
+  private data: { value: Approvals } = { value: initial },
+  private copied: { value: boolean } = { value: false },
+) oninit={() => listener.on("notify", () => data.value = fetchApprovals())}>
+  <Layout title="Approvals" {person} active="approvals">
+    <div class="page-shell stack is-xl">
+      <div class="stack is-xs">
+        <h1>Approvals</h1>
+        <p e:if={data.value.pending.length} class="text-ink-soft">
+          {data.value.pending.length} {data.value.pending.length === 1 ? "request is" : "requests are"} waiting on you.
+        </p>
+        <p e:else class="text-ink-soft">You're all caught up.</p>
+      </div>
+
+      <div class="approvals-grid">
+        <section class="stack" aria-label="Waiting for you">
+          <PendingCard e:for={r of data.value.pending} request={r} upcoming={data.value.upcoming} {data} />
+
+          <div e:if={!data.value.pending.length} class="card">
+            <div class="card-body all-clear stack is-sm">
+              <svg width="32" height="32" viewBox="0 0 24 24" aria-hidden="true" class="mx-auto">
+                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" />
+                <path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <p>No requests waiting. New ones show up here the moment they're sent.</p>
+            </div>
+          </div>
+        </section>
+
+        <aside class="stack is-lg">
+          <section class="card">
+            <div class="card-body stack is-sm">
+              <div class="row" style="justify-content: space-between">
+                <h2 class="section-title">Who's out next</h2>
+                <a href="/calendar" class="link-action text-sm">Calendar</a>
+              </div>
+              <ul e:if={data.value.upcoming.length} class="side-list">
+                <li e:for={o of data.value.upcoming.slice(0, 8)} class={`is-${o.type}`}>
+                  <span class={["side-dot", o.status === "pending" && "is-pending"]} aria-hidden="true"></span>
+                  <div>
+                    <div>{o.userName}</div>
+                    <div class="side-meta">{formatRange(o.startDate, o.endDate)} · {TYPE_LABELS[o.type]}{o.status === "pending" ? " · pending" : ""}</div>
+                  </div>
+                </li>
+              </ul>
+              <p e:else class="text-sm text-ink-dim">Nobody is out.</p>
+            </div>
+          </section>
+
+          <section e:if={data.value.recent.length} class="card">
+            <div class="card-body stack is-sm">
+              <h2 class="section-title">Recently decided</h2>
+              <ul class="side-list">
+                <li e:for={o of data.value.recent} class={`is-${o.type}`}>
+                  <span class="side-dot" aria-hidden="true"></span>
+                  <div class="flex-1 min-w-0">
+                    <div>{o.userName}</div>
+                    <div class="side-meta">{formatRange(o.startDate, o.endDate)} · {TYPE_LABELS[o.type]}</div>
+                  </div>
+                  <span class={["pill", STATUS_PILLS[o.status]]}>{o.status}</span>
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-body stack is-sm">
+              <h2 class="section-title">Team calendar feed</h2>
+              <p class="text-sm text-ink-soft">Your team's approved time off, in your own calendar app. Keep this link private.</p>
+              <div class="row gap-2">
+                <input readonly value={feedUrl} class="font-mono text-xs" aria-label="Calendar feed url">
+                <button class="is-sm" onclick={() => onCopy(feedUrl, copied)}>{copied.value ? "Copied" : "Copy"}</button>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </div>
+  </Layout>
+</html>
+
+<PendingCard (
+  request: PendingRequest,
+  upcoming: TimeOffRequest[],
+  data: { value: Approvals },
+  private draft: Decision = { comment: "", busy: false, error: "" },
+)>
+  <article class={["card ask", `is-${request.type}`]}>
+    <div class="card-body stack">
+      <div class="ask-head row">
+        <div class="row gap-3">
+          <span class="avatar" aria-hidden="true">{initials(request.userName)}</span>
+          <div>
+            <div class="ask-name">{request.userName}</div>
+            <div class="ask-when">{formatRange(request.startDate, request.endDate)} · {formatDays(request.days)}</div>
+          </div>
+        </div>
+        <span class={["pill type-pill", `is-${request.type}`]}><span class="pill-dot"></span>{TYPE_LABELS[request.type]}</span>
+      </div>
+
+      <p e:if={request.note} class="ask-note">“{request.note}”</p>
+
+      <ul class="ask-facts stack is-xs">
+        <li>
+          <span>Leaves {formatDays(request.remainingAfter)} of {request.type} if approved.</span>
+        </li>
+        <li e:if={overlapping(request, upcoming).length}>
+          <span class="text-warning">Also out:</span>
+          <span>{overlapping(request, upcoming).map((o) => `${firstName(o.userName)} (${formatRange(o.startDate, o.endDate)}${o.status === "pending" ? ", pending" : ""})`).join(", ")}</span>
+        </li>
+        <li e:else>
+          <span>Nobody else on the team is out then.</span>
+        </li>
+      </ul>
+
+      <div e:if={draft.error} class="callout is-danger" role="alert">{draft.error}</div>
+
+      <div class="ask-actions row gap-2 is-end">
+        <textarea rows={1}
+                  value={draft.comment}
+                  aria-label={`Comment for ${request.userName}`}
+                  placeholder="Add a comment (required to deny)"
+                  maxlength={500}></textarea>
+        <button class="is-danger" disabled={draft.busy} onclick={() => onDecide(request, "denied", draft, data)}>Deny</button>
+        <button class="is-primary" disabled={draft.busy} onclick={() => onDecide(request, "approved", draft, data)}>Approve</button>
+      </div>
+    </div>
+  </article>
+</PendingCard>

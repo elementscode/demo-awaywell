@@ -1,0 +1,34 @@
+import "./style.css";
+import { formatRange, formatDays } from "#app/shared/format";
+
+/**
+ * Sent to a manager when one of their reports asks for time off.
+ *
+ * @email
+ */
+<html (
+  managerName: string,
+  employeeName: string,
+  typeLabel: string,
+  startDate: string,
+  endDate: string,
+  days: number,
+  note: string,
+)>
+  <body class="email request-submitted">
+    <div class="email-wrap">
+      <h1>{employeeName} asked for time off</h1>
+      <p>Hi {managerName.split(" ")[0]},</p>
+      <p>
+        <strong>{employeeName}</strong> would like <strong>{typeLabel.toLowerCase()}</strong>
+        leave: {formatRange(startDate, endDate)} ({formatDays(days)}).
+      </p>
+      <p e:if={note} class="note">“{note}”</p>
+      <p><a href="/approvals">Review the request</a></p>
+
+      <div class="email-footer">
+        <p>awaywell · time off for the team</p>
+      </div>
+    </div>
+  </body>
+</html>

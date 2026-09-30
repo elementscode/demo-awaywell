@@ -1,0 +1,239 @@
+import "./style.css";
+import type { Listener } from "@elements/app";
+import { ValidationError } from "@elements/app";
+import { Layout } from "#app/shared/templates/layout";
+import type { Person } from "#app/shared/services/auth";
+import { submitRequest, cancelRequest, fetchMine, TYPES, TYPE_LABELS } from "#app/shared/services/timeoff";
+import type { Balance, TimeOffRequest, RequestEvent, RequestForm, TimeOffType } from "#app/shared/services/timeoff";
+import { formatRange, formatDays, formatDay, workingDaysBetween, toDay, STATUS_PILLS } from "#app/shared/format";
+
+export interface Mine {
+  balances: Balance[];
+  requests: TimeOffRequest[];
+}
+
+interface FormState extends RequestForm {
+  busy: boolean;
+  error: string;
+  errors: { type?: string[]; startDate?: string[]; endDate?: string[] };
+  sent: string;
+}
+
+function blankForm(): FormState {
+  return { type: "vacation", startDate: "", endDate: "", note: "", busy: false, error: "", errors: {}, sent: "" };
+}
+
+function onSubmit(form: FormState, mine: { value: Mine }) {
+  form.busy = true;
+  form.error = "";
+  form.errors = {};
+
+  try {
+    let r = submitRequest({ type: form.type, startDate: form.startDate, endDate: form.endDate || form.startDate, note: form.note });
+    mine.value = fetchMine();
+    Object.assign(form, blankForm(), { sent: `Sent to your manager: ${TYPE_LABELS[r.type].toLowerCase()}, ${formatRange(r.startDate, r.endDate)}.` });
+  } catch (err: any) {
+    if (err instanceof ValidationError && err.errors && typeof err.errors === "object") {
+      form.errors = err.errors as FormState["errors"];
+    } else {
+      form.error = err.message;
+    }
+
+    form.busy = false;
+  }
+}
+
+function onStartChange(form: FormState) {
+  if (!form.endDate || form.endDate < form.startDate) {
+    form.endDate = form.startDate;
+  }
+}
+
+function onCancel(r: TimeOffRequest, mine: { value: Mine }) {
+  if (!confirm(`Cancel your ${r.type} request for ${formatRange(r.startDate, r.endDate)}?`)) {
+    return;
+  }
+
+  cancelRequest(r.id);
+  mine.value = fetchMine();
+}
+
+async function onCopy(url: string, copied: { value: boolean }) {
+  await navigator.clipboard.writeText(url);
+  copied.value = true;
+  setTimeout(() => copied.value = false, 1500);
+}
+
+function upcoming(requests: TimeOffRequest[]): TimeOffRequest[] {
+  let today = toDay(new Date());
+
+  return requests.filter((r) => r.endDate >= today).sort((a, b) => a.startDate.localeCompare(b.startDate));
+}
+
+function past(requests: TimeOffRequest[]): TimeOffRequest[] {
+  let today = toDay(new Date());
+
+  return requests.filter((r) => r.endDate < today);
+}
+
+function previewText(form: FormState, balances: Balance[]): string {
+  let days = workingDaysBetween(form.startDate, form.endDate || form.startDate);
+  if (!form.startDate) {
+    return "Pick the first and last day you'll be out.";
+  }
+
+  if (days === 0) {
+    return "Those dates fall on a weekend.";
+  }
+
+  let left = balances.find((b) => b.type === form.type)?.remainingDays ?? 0;
+
+  return `${formatDays(days)} of ${form.type}. You'd have ${formatDays(Math.max(left - days, 0))} left.`;
+}
+
+<html class="page-home" (
+  person: Person,
+  managerName: string,
+  feedUrl: string,
+  initial: Mine,
+  listener: Listener<RequestEvent>,
+  private mine: { value: Mine } = { value: initial },
+  private form: FormState = blankForm(),
+  private copied: { value: boolean } = { value: false },
+) oninit={() => listener.on("notify", () => mine.value = fetchMine())}>
+  <Layout title="My time off" {person} active="home">
+    <div class="page-shell stack is-xl">
+      <div class="home-head stack is-xs">
+        <h1>Hi, {person.name.split(" ")[0]}</h1>
+        <p class="text-ink-soft">Your requests go to {managerName}.</p>
+      </div>
+
+      <section class="balances" aria-label="Balances">
+        <BalanceCard e:for={b of mine.value.balances} balance={b} />
+      </section>
+
+      <div class="home-grid">
+        <div class="stack is-lg">
+          <section class="card">
+            <div class="card-head">
+              <h2 class="section-title">Request time off</h2>
+            </div>
+            <div class="card-body">
+              <form class="stack" onsubmit={() => onSubmit(form, mine)}>
+                <div e:if={form.sent} class="callout is-success" role="status">{form.sent}</div>
+                <div e:if={form.error} class="callout is-danger" role="alert">{form.error}</div>
+
+                <div class="field">
+                  <label>Type</label>
+                  <div class="type-choices" role="radiogroup" aria-label="Type">
+                    <button e:for={t of TYPES}
+                            id={t}
+                            type="button"
+                            role="radio"
+                            aria-checked={form.type === t ? "true" : "false"}
+                            class={["type-choice is-sm", `is-${t}`, form.type === t && "is-chosen"]}
+                            onclick={() => form.type = t}>
+                      <span class="pill-dot"></span>
+                      {TYPE_LABELS[t]}
+                    </button>
+                  </div>
+                </div>
+
+                <div class="date-pair">
+                  <div class="field">
+                    <label for="startDate">First day</label>
+                    <input id="startDate" name="startDate" type="date" value={form.startDate}
+                           class={[form.errors.startDate && "is-error"]}
+                           onchange={() => onStartChange(form)} required>
+                  </div>
+                  <div class="field">
+                    <label for="endDate">Last day</label>
+                    <input id="endDate" name="endDate" type="date" value={form.endDate} min={form.startDate}
+                           class={[form.errors.endDate && "is-error"]} required>
+                  </div>
+                </div>
+
+                <p e:if={form.errors.startDate} class="text-danger text-sm">{form.errors.startDate?.[0]}</p>
+                <p e:if={form.errors.endDate} class="text-danger text-sm">{form.errors.endDate?.[0]}</p>
+
+                <div class="field">
+                  <label for="note">Note <span class="text-ink-dim">(optional)</span></label>
+                  <textarea id="note" name="note" rows={2} value={form.note} maxlength={500}
+                            placeholder="Anything your manager should know"></textarea>
+                </div>
+
+                <p class="request-preview">{previewText(form, mine.value.balances)}</p>
+
+                <button type="submit" class={["is-primary is-block", form.busy && "is-loading"]} disabled={form.busy}>Send request</button>
+              </form>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-body stack is-sm">
+              <h2 class="section-title">Calendar feed</h2>
+              <p class="text-sm text-ink-soft">
+                Subscribe to this link in your calendar app to see your approved time off
+                there. Keep it private.
+              </p>
+              <div class="feed-url">
+                <input readonly value={feedUrl} aria-label="Calendar feed url" onfocus={(e) => (e.target as HTMLInputElement).select()}>
+                <button class="is-sm" onclick={() => onCopy(feedUrl, copied)}>{copied.value ? "Copied" : "Copy"}</button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section class="home-lists stack is-lg">
+          <div class="stack">
+            <h2 class="section-title">Upcoming</h2>
+            <ul e:if={upcoming(mine.value.requests).length} class="request-list">
+              <RequestRow e:for={r of upcoming(mine.value.requests)} request={r} {mine} />
+            </ul>
+            <p e:else class="empty">Nothing booked yet.</p>
+          </div>
+
+          <div e:if={past(mine.value.requests).length} class="stack">
+            <h2 class="section-title">Past</h2>
+            <ul class="request-list">
+              <RequestRow e:for={r of past(mine.value.requests)} request={r} {mine} />
+            </ul>
+          </div>
+        </section>
+      </div>
+    </div>
+  </Layout>
+</html>
+
+<BalanceCard (balance: Balance)>
+  <div class={["card balance", `is-${balance.type}`]}>
+    <div class="card-body stack">
+      <div class="row gap-2">
+        <span class={["pill type-pill", `is-${balance.type}`]}><span class="pill-dot"></span>{TYPE_LABELS[balance.type]}</span>
+      </div>
+      <div class="balance-left">{balance.remainingDays}<small>of {balance.allowanceDays} days left</small></div>
+      <div class="balance-bar" aria-hidden="true">
+        <span class="is-used" style={`width: ${Math.min(100, balance.usedDays / balance.allowanceDays * 100)}%`}></span>
+        <span class="is-pending" style={`width: ${Math.min(100, balance.pendingDays / balance.allowanceDays * 100)}%`}></span>
+      </div>
+      <div class="balance-meta">{balance.usedDays} used · {balance.pendingDays} pending</div>
+    </div>
+  </div>
+</BalanceCard>
+
+<RequestRow (request: TimeOffRequest, mine: { value: Mine })>
+  <li class={["request-item", `is-${request.type}`, (request.status === "cancelled" || request.status === "denied") && "is-inactive"]}>
+    <span class="request-swatch" aria-hidden="true"></span>
+    <div class="stack is-xs">
+      <div class="request-when">{formatRange(request.startDate, request.endDate)}</div>
+      <div class="request-detail">
+        {TYPE_LABELS[request.type]} · {formatDays(request.days)}{request.note ? ` · ${request.note}` : ""}
+      </div>
+      <div e:if={request.decisionComment} class="request-comment">“{request.decisionComment}”</div>
+    </div>
+    <div class="request-side stack is-xs">
+      <span class={["pill", STATUS_PILLS[request.status]]}><span class="pill-dot"></span>{request.status}</span>
+      <button e:if={request.status === "pending"} class="is-ghost is-sm" onclick={() => onCancel(request, mine)}>Cancel</button>
+    </div>
+  </li>
+</RequestRow>

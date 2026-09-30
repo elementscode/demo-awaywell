@@ -1,0 +1,36 @@
+import "./style.css";
+import { formatRange, formatDays } from "#app/shared/format";
+
+/**
+ * Sent to an employee when their manager approves or denies a request.
+ *
+ * @email
+ */
+<html (
+  employeeName: string,
+  managerName: string,
+  approved: boolean,
+  typeLabel: string,
+  startDate: string,
+  endDate: string,
+  days: number,
+  comment: string,
+)>
+  <body class="email request-decided">
+    <div class="email-wrap">
+      <h1 e:if={approved}>Your time off is approved</h1>
+      <h1 e:else>Your time off request was denied</h1>
+      <p>Hi {employeeName.split(" ")[0]},</p>
+      <p>
+        {managerName} {approved ? "approved" : "denied"} your {typeLabel.toLowerCase()} request for
+        {formatRange(startDate, endDate)} ({formatDays(days)}).
+      </p>
+      <p e:if={comment} class="comment">“{comment}” — {managerName}</p>
+      <p><a href="/">See your time off</a></p>
+
+      <div class="email-footer">
+        <p>awaywell · time off for the team</p>
+      </div>
+    </div>
+  </body>
+</html>
