@@ -29,12 +29,12 @@ Awaywell needed two kinds of accounts, emails on both sides of a request, a cale
 
 ### What Elements gave the app
 
-- **Live pages from one channel.** `requestEvents` in `app/shared/services/timeoff.ts` is a Channel that every write notifies. The home, approvals and calendar pages each listen filtered to their own person or team, then re-read through an rpc such as `fetchTeamMonth`, so a manager's calendar fills in as requests arrive.
-- **Server calls as function calls.** `submitRequest`, `cancelRequest` and `decideRequest` are `@rpc` functions called straight from the page. A `ValidationError` returns field messages such as "those dates are all weekend" to the form.
-- **Background email.** `NotifyRequestJob` in `app/jobs/notify-request.ts` emails the manager when a request comes in and the employee when it is decided. The rpc schedules it inside its transaction, so mail goes out for committed requests.
-- **A calendar feed in one route.** `app/routes/feed.ts` answers `/feed/:token.ics` with a person's approved time off, and a manager's feed carries their team. The private token in the url is the credential, so calendar apps can subscribe.
-- **Sessions and roles.** `app/shared/services/auth.ts` holds `currentManagerOrThrow` for rpcs and `personForPage`, which sends someone on the wrong page to their own home.
-- **Data from SQL files.** Three migrations define the schema, a `workingDays` function that counts weekdays for both the rpc and the seed, and two managers with ten reports, their balances and about forty requests in every status. The project server applied each migration as soon as it was saved.
+- **A live team calendar.** Every request, cancellation and decision notifies a channel. A manager's calendar and approvals page, and an employee's own page, each listen for their team or person and re-read, so a new request or approval shows up on an open calendar right away.
+- **Requests and approvals as function calls.** Requesting, cancelling, approving and denying are `@rpc` functions called from the page. The server counts working days, checks the balance and overlapping dates, and returns messages such as "those dates are all weekend" to the form.
+- **Emails from a job.** A background job emails the manager when a request comes in and the employee when it is decided, using two email templates. It is scheduled in the same transaction as the request, so mail follows committed changes.
+- **A calendar feed per person.** One route serves each person's approved time off as an .ics feed at a private url, and a manager's feed includes their team, so it subscribes in any calendar app.
+- **Sessions and roles.** Employees and managers each land on their own pages, and manager-only server calls share one guard.
+- **Data from SQL files.** Migrations define the schema, a working-days function used by both the app and the seed, and two managers with ten reports, balances and about forty requests in every status. The project server applied each one as soon as it was saved.
 
 ### What the project server gave the agent
 
@@ -43,8 +43,6 @@ The project server runs alongside the agent and answers as soon as a file is sav
 ### What shipped
 
 The app type-checks with zero errors and all 24 tests pass. Every page works on desktop and phone, and live updates arrive across sessions, such as an approval turning a request solid on a manager's open calendar.
-
-Start in `app/shared/services/timeoff.ts`.
 
 ## Demo accounts
 
