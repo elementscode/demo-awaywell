@@ -23,6 +23,25 @@ app.
 elements create awaywell -scaffold=elementscode/demo-awaywell
 ```
 
+## How it's built
+
+Awaywell needed two kinds of accounts, emails on both sides of a request, a calendar feed per person, and a live team calendar. Each of those is a part of Elements, so the agent spent its 14 minutes on the time off rules themselves.
+
+### What Elements gave the app
+
+- **Live pages from one channel.** `requestEvents` in `app/shared/services/timeoff.ts` is a Channel that every write notifies. The home, approvals and calendar pages each listen filtered to their own person or team, then re-read through an rpc such as `fetchTeamMonth`, so a manager's calendar fills in as requests arrive.
+- **Server calls as function calls.** `submitRequest`, `cancelRequest` and `decideRequest` are `@rpc` functions called straight from the page. A `ValidationError` returns field messages such as "those dates are all weekend" to the form.
+- **Background email.** `NotifyRequestJob` in `app/jobs/notify-request.ts` emails the manager when a request comes in and the employee when it is decided. The rpc schedules it inside its transaction, so mail goes out for committed requests.
+- **A calendar feed in one route.** `app/routes/feed.ts` answers `/feed/:token.ics` with a person's approved time off, and a manager's feed carries their team. The private token in the url is the credential, so calendar apps can subscribe.
+- **Sessions and roles.** `app/shared/services/auth.ts` holds `currentManagerOrThrow` for rpcs and `personForPage`, which sends someone on the wrong page to their own home.
+- **Data from SQL files.** Three migrations define the schema, a `workingDays` function that counts weekdays for both the rpc and the seed, and two managers with ten reports, their balances and about forty requests in every status. The project server applied each migration as soon as it was saved.
+
+### What the agent got from the tooling
+
+The agent ran 19 builds in 14 minutes. By the build's own timer, the median build finished in 21 milliseconds, so it checked its work after each edit and kept going. The build caught one round of errors, in a test helper: two reads from an untyped error and a callback whose promise was dropped inside a try block, with a message that showed the fix. It read 33 manual pages as it reached each part, from `channel` and `jobs` to `database/sql`, then wrote 31 tests. In a real browser it held the team calendar open while a second session submitted and approved requests, watched the new days appear, and checked three pages at phone width.
+
+Start in `app/shared/services/timeoff.ts`.
+
 ## Demo accounts
 
 The seed creates two managers with five reports each, a balance per type for
