@@ -38,7 +38,7 @@ Awaywell needed two kinds of accounts, emails on both sides of a request, a cale
 
 ### What the agent got from the tooling
 
-The agent ran 19 builds in 14 minutes. By the build's own timer, the median build finished in 21 milliseconds, so it checked its work after each edit and kept going. The build caught one round of errors, in a test helper: two reads from an untyped error and a callback whose promise was dropped inside a try block, with a message that showed the fix. It read 33 manual pages as it reached each part, from `channel` and `jobs` to `database/sql`, then wrote 31 tests. In a real browser it held the team calendar open while a second session submitted and approved requests, watched the new days appear, and checked three pages at phone width.
+The agent ran 19 builds in 14 minutes. By the build's own timer, the median build finished in 14 milliseconds, so it checked its work after each edit and kept going. The build caught one round of errors, in a test helper: two reads from an untyped error and a callback whose promise was dropped inside a try block, with a message that showed the fix. It read 33 manual pages as it reached each part, from `channel` and `jobs` to `database/sql`, then wrote 31 tests. In a real browser it held the team calendar open while a second session submitted and approved requests, watched the new days appear, and checked three pages at phone width.
 
 Start in `app/shared/services/timeoff.ts`.
 
