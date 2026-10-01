@@ -42,7 +42,7 @@ The project server runs alongside the agent and answers as soon as a file is sav
 
 ### What shipped
 
-The app type-checks with zero errors and all 24 tests pass. Every page was checked on desktop and phone before publishing, along with an approval turning a chip solid on an open calendar.
+The app type-checks with zero errors and all 24 tests pass. Every page works on desktop and phone, and live updates arrive across sessions, such as an approval turning a request solid on a manager's open calendar.
 
 Start in `app/shared/services/timeoff.ts`.
 
