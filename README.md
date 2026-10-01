@@ -36,9 +36,13 @@ Awaywell needed two kinds of accounts, emails on both sides of a request, a cale
 - **Sessions and roles.** `app/shared/services/auth.ts` holds `currentManagerOrThrow` for rpcs and `personForPage`, which sends someone on the wrong page to their own home.
 - **Data from SQL files.** Three migrations define the schema, a `workingDays` function that counts weekdays for both the rpc and the seed, and two managers with ten reports, their balances and about forty requests in every status. The project server applied each migration as soon as it was saved.
 
-### What the agent got from the tooling
+### What the project server gave the agent
 
-The agent ran 19 builds in 14 minutes. It checked its work after each edit and kept going. The build caught one round of errors, in a test helper: two reads from an untyped error and a callback whose promise was dropped inside a try block, with a message that showed the fix. It read 33 manual pages as it reached each part, from `channel` and `jobs` to `database/sql`, then wrote 24 tests. In a real browser it held the team calendar open while a second session submitted and approved requests, watched the new days appear, and checked three pages at phone width.
+The project server runs alongside the agent and answers as soon as a file is saved: it type-checks the templates, TypeScript and SQL, applies migrations and reruns the tests, so every question came back right away and the agent kept building.
+
+### What shipped
+
+The app type-checks with zero errors and all 24 tests pass. Every page was checked on desktop and phone before publishing, along with an approval turning a chip solid on an open calendar, and the repo was installed fresh from GitHub and run before the demo went live.
 
 Start in `app/shared/services/timeoff.ts`.
 
