@@ -10,9 +10,6 @@ Request time off, approve it with a comment, track balances by type, and see who
 
 ## Agent specs
 
-What one run of the prompt below took, from an empty Elements project to this
-app.
-
 - **Agent:** Claude Code, Opus 5.5 Medium
 - **Time:** 14 min
 - **Cost:** $5.08 at API rates, September 2026
@@ -76,31 +73,7 @@ them.
 In development the emails for new, approved and denied requests are written to
 the job log instead of sent.
 
-## The prompt
-
-```text
-Build a time off app named awaywell for a company of about twenty people.
-
-Two kinds of accounts: employee and manager. Each employee has one manager.
-
-EMPLOYEE
-- Request time off: type (vacation, sick, personal), dates, a note.
-- See their balance per type, and their requests with status.
-- Cancel a pending request.
-
-MANAGER
-- Approve or deny their reports' requests with a comment.
-- Team calendar: a month view of who is out, colored by type.
-
-Everyone gets an email when a request is approved or denied, and managers get
-one when a request comes in. Each person has a private calendar feed url
-(.ics) of approved time off to subscribe to in their calendar app.
-
-Seed two managers, ten employees, balances, and requests across this month and
-next in every status. Show the seeded logins on the sign-in page.
-
-New requests and approvals update the calendar in real time.
-```
+**Demo:** [Awaywell](https://elements.dev/demos/01a0f3a8-3881-7fd5-9f2e-8272c870a636)
 
 ## License
 
