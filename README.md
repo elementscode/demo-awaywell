@@ -1,30 +1,16 @@
-![Awaywell, a time off app built with Elements: the team calendar for October, with vacation, sick and personal days in different colors and pending requests striped.](https://elements.dev/demos/01a0f3a8-3881-7fd5-9f2e-8272c870a636/poster?v=2a795814a221)
+![Time off requests, approvals and balances, built by Claude Code on Elements: the team calendar for October, with vacation, sick and personal days in different colors and pending requests striped.](https://elements.dev/demos/01a0f3a8-3881-7fd5-9f2e-8272c870a636/poster?v=2a795814a221)
 
-# Awaywell
+# Time off requests, approvals and balances, built by Claude Code on Elements
 
-> A demo app built with [Elements](https://elements.dev).
+> Awaywell is a full-stack app built with Claude Code on Elements.
 
 Request time off, approve it with a comment, track balances by type, and see who is out on a live team calendar with .ics feeds.
 
-**Demo:** [Awaywell](https://elements.dev/demos/01a0f3a8-3881-7fd5-9f2e-8272c870a636)
-
-## Agent specs
-
-- **Agent:** Claude Code, Opus 5.5 Medium
-- **Time:** 14 min
-- **Cost:** $5.08 at API rates, September 2026
-
-## Get started
-
-```bash
-elements create awaywell -scaffold=elementscode/demo-awaywell
-```
+[Run this app on your machine](https://elements.dev/demos/01a0f3a8-3881-7fd5-9f2e-8272c870a636). Use this demo as inspiration, or as the starting point for your own app. Your agent creates a new app with this one as the scaffold, and you prompt it to add whatever features you want.
 
 ## How it's built
 
 Awaywell needed two kinds of accounts, emails on both sides of a request, a calendar feed per person, and a live team calendar. Each of those is a part of Elements, so the agent spent its 14 minutes on the time off rules themselves.
-
-### What Elements gave the app
 
 - **A live team calendar.** Every request, cancellation and decision notifies a channel. A manager's calendar and approvals page, and an employee's own page, each listen for their team or person and re-read, so a new request or approval shows up on an open calendar right away.
 
@@ -38,43 +24,6 @@ Awaywell needed two kinds of accounts, emails on both sides of a request, a cale
 
 - **Data from SQL files.** Migrations define the schema, a working-days function used by both the app and the seed, and two managers with ten reports, balances and about forty requests in every status. The project server applied each one as soon as it was saved.
 
-### What the project server gave the agent
+## Why Elements
 
-The project server runs alongside the agent and answers as soon as a file is saved: it type-checks the templates, TypeScript and SQL, applies migrations and reruns the tests, so every question came back right away and the agent kept building.
-
-### What shipped
-
-The app type-checks with zero errors and all 24 tests pass. Every page works on desktop and phone, and live updates arrive across sessions, such as an approval turning a request solid on a manager's open calendar.
-
-## Demo accounts
-
-The seed creates two managers with five reports each, a balance per type for
-every employee (vacation, sick and personal), and about forty requests across
-this month and next in every status: approved, pending, denied and cancelled.
-The dates are set relative to the current month, so the calendar is always
-current. Every account's password is `awaywell`, and the sign-in page lists
-them.
-
-| Email                  | Role     | Manager      |
-| ---------------------- | -------- | ------------ |
-| maya@awaywell.test     | manager  |              |
-| priya@awaywell.test    | employee | Maya Okafor  |
-| sam@awaywell.test      | employee | Maya Okafor  |
-| lena@awaywell.test     | employee | Maya Okafor  |
-| omar@awaywell.test     | employee | Maya Okafor  |
-| jules@awaywell.test    | employee | Maya Okafor  |
-| daniel@awaywell.test   | manager  |              |
-| aiko@awaywell.test     | employee | Daniel Reyes |
-| marcus@awaywell.test   | employee | Daniel Reyes |
-| noor@awaywell.test     | employee | Daniel Reyes |
-| theo@awaywell.test     | employee | Daniel Reyes |
-| rosa@awaywell.test     | employee | Daniel Reyes |
-
-In development the emails for new, approved and denied requests are written to
-the job log instead of sent.
-
-**Demo:** [Awaywell](https://elements.dev/demos/01a0f3a8-3881-7fd5-9f2e-8272c870a636)
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+Elements is an integrated full-stack app framework and a project server. The project server checks the agent's work as it builds: it type-checks the server and browser code, analyzes the program, applies migrations and runs the tests, then reports the results to the agent. A security mistake, such as calling a server-only function from the browser, is a compile error. The agent reads the report and fixes its own mistakes before it tells you a feature is done. The same checks run on every feature you ask for next.
