@@ -26,8 +26,8 @@
   color: var(--accent);
 }
 
-.signin-card .card-body {
-  padding: var(--space-6);
+.signin-card {
+  --card-spacing: var(--space-6);
 }
 
 .demo-team + .demo-team {
@@ -91,7 +91,7 @@
   gap: var(--space-3);
 }
 
-.demo-login.is-manager .avatar-fallback {
-  background: var(--accent);
-  color: var(--accent-ink);
+.demo-login.is-manager .avatar {
+  --avatar-fallback-bg: var(--accent);
+  --avatar-fallback-ink: var(--accent-ink);
 }

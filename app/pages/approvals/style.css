@@ -11,10 +11,6 @@
   border-left: 3px solid var(--type);
 }
 
-.ask .card-body {
-  gap: var(--space-4);
-}
-
 .ask-head {
   justify-content: space-between;
   align-items: flex-start;
@@ -116,9 +112,9 @@
 }
 
 /* an asker's avatar takes the tint of the kind of time off they asked for */
-.ask .avatar-fallback {
-  background: var(--type-soft);
-  color: var(--type-ink);
+.ask .avatar {
+  --avatar-fallback-bg: var(--type-soft);
+  --avatar-fallback-ink: var(--type-ink);
 }
 
 .all-clear .empty-media {
