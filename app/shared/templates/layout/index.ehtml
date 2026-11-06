@@ -1,5 +1,6 @@
 import "./style.css";
 import { redirect } from "@elements/app";
+import { Button } from "@elements/ui/button";
 import favicon from "#app/shared/assets/favicons/favicon.svg";
 import { signout } from "#app/shared/services/auth";
 import type { Person } from "#app/shared/services/auth";
@@ -31,7 +32,7 @@ function onSignout() {
 
           <div class="layout-who row gap-2">
             <span class="layout-who-name">{person.name}</span>
-            <button class="is-ghost is-sm" onclick={() => onSignout()}>Sign out</button>
+            <Button variant="ghost" size="sm" onclick={() => onSignout()}>Sign out</Button>
           </div>
         </div>
       </header>

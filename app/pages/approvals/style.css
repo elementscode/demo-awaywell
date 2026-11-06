@@ -21,19 +21,6 @@
   gap: var(--space-4);
 }
 
-.avatar {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: var(--radius-full);
-  background: var(--type-soft, var(--bg-muted));
-  color: var(--type-ink, var(--ink-soft));
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-}
-
 .ask-name {
   font-weight: var(--weight-semibold);
 }
@@ -104,16 +91,6 @@
   color: var(--ink-dim);
 }
 
-.all-clear {
-  text-align: center;
-  padding: var(--space-10) var(--space-6);
-  color: var(--ink-soft);
-}
-
-.all-clear svg {
-  color: var(--success);
-}
-
 @media (max-width: 56rem) {
   .approvals-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -136,4 +113,14 @@
     align-items: center;
     min-height: 2.5rem;
   }
+}
+
+/* an asker's avatar takes the tint of the kind of time off they asked for */
+.ask .avatar-fallback {
+  background: var(--type-soft);
+  color: var(--type-ink);
+}
+
+.all-clear .empty-media {
+  color: var(--success);
 }
