@@ -95,7 +95,7 @@ export function groupByTeam(logins: DemoLogin[]): DemoTeam[] {
                          value={form.email}
                          placeholder="you@company.com"
                          required
-                         attrs={{ id: "email", autocomplete: "email", autocapitalize: "none", spellcheck: "false" }} />
+                         attrs={{ autocomplete: "email", autocapitalize: "none", spellcheck: "false" }} />
                 </Field>
 
                 <Field label="Password" reserveError={false}>
@@ -103,7 +103,7 @@ export function groupByTeam(logins: DemoLogin[]): DemoTeam[] {
                          name="password"
                          value={form.password}
                          required
-                         attrs={{ id: "password", autocomplete: "current-password" }} />
+                         attrs={{ autocomplete: "current-password" }} />
                 </Field>
 
                 <Button type="submit" variant="primary" block loading={form.busy}>Sign in</Button>
