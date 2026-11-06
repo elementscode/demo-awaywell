@@ -1,5 +1,3 @@
-@import "#app/shared/styles/page.css";
-
 .layout-header {
   border-bottom: 1px solid var(--rule-soft);
   background: var(--bg);
