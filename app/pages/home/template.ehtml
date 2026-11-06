@@ -143,13 +143,13 @@ function previewText(form: FormState, balances: Balance[]): string {
                   <div class="date-pair">
                     <Field label="First day" error={form.errors.startDate?.[0] ?? ""} reserveError={false}>
                       <DatePicker value={form.startDate} name="startDate" block required
-                                  format={{ month: "short", day: "numeric", year: "numeric" }}
+                                  format={{ month: "short", day: "numeric" }}
                                   invalid={!!form.errors.startDate}
                                   onValueChange={(v) => onStartChange(form, v)} />
                     </Field>
                     <Field label="Last day" error={form.errors.endDate?.[0] ?? ""} reserveError={false}>
                       <DatePicker value={form.endDate} name="endDate" block required min={form.startDate}
-                                  format={{ month: "short", day: "numeric", year: "numeric" }}
+                                  format={{ month: "short", day: "numeric" }}
                                   invalid={!!form.errors.endDate} />
                     </Field>
                   </div>
