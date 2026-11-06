@@ -14,10 +14,6 @@
   border-top: 3px solid var(--type);
 }
 
-.balance .card-body {
-  gap: var(--space-2);
-}
-
 .balance-left {
   font-size: var(--text-4xl);
   font-weight: var(--weight-semibold);
@@ -125,11 +121,6 @@
   align-items: flex-end;
 }
 
-.feed-url {
-  display: flex;
-  gap: var(--space-2);
-}
-
 @media (max-width: 56rem) {
   .home-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -141,8 +132,8 @@
     gap: var(--space-2);
   }
 
-  .balance .card-body {
-    padding: var(--space-3);
+  .balance {
+    --card-spacing: var(--space-3);
   }
 
   .balance-left {
@@ -182,12 +173,9 @@
 .type-choices .toggle-group-item {
   flex: 1;
   gap: var(--space-1-5);
-}
-
-.type-choices .toggle-group-item[data-state="on"] {
-  background: var(--type-soft);
-  color: var(--type-ink);
-  border-color: var(--type);
+  --item-selected: var(--type-soft);
+  --item-selected-ink: var(--type-ink);
+  --toggle-on-border: var(--type);
 }
 
 .type-dot {
@@ -195,9 +183,4 @@
   height: 8px;
   border-radius: var(--radius-full);
   background: var(--type);
-}
-
-.feed-url .input {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
 }

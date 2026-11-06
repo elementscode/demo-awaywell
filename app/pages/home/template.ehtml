@@ -122,49 +122,51 @@ function previewText(form: FormState, balances: Balance[]): string {
 
       <div class="home-grid">
         <div class="stack is-lg">
-          <Card title="Request time off" level={2} attrs={{ "aria-label": "Request time off" }}>
-            <CardContent>
-              <form class="stack" onsubmit={() => onSubmit(form, mine)}>
-                <Alert e:if={form.sent} variant="success" role="status" description={form.sent} />
-                <Alert e:if={form.error} variant="danger" description={form.error} />
+          <section aria-labelledby="request-title">
+            <Card title="Request time off" level={2} titleId="request-title">
+              <CardContent>
+                <form class="stack" onsubmit={() => onSubmit(form, mine)}>
+                  <Alert e:if={form.sent} variant="success" role="status" description={form.sent} />
+                  <Alert e:if={form.error} variant="danger" description={form.error} />
 
-                <Field label="Type" reserveError={false}>
-                  <ToggleGroup type="single" variant="outline" size="sm" label="Type" class="type-choices"
-                               value={form.type}
-                               onValueChange={(v, details) => v ? form.type = v as TimeOffType : details.cancel()}>
-                    <ToggleGroupItem e:for={t of TYPES} value={t} class={`is-${t}`}>
-                      <span class="type-dot" aria-hidden="true"></span>
-                      {TYPE_LABELS[t]}
-                    </ToggleGroupItem>
-                  </ToggleGroup>
-                </Field>
-
-                <div class="date-pair">
-                  <Field label="First day" error={form.errors.startDate?.[0] ?? ""} reserveError={false}>
-                    <DatePicker value={form.startDate} name="startDate" block required
-                                format={{ month: "short", day: "numeric", year: "numeric" }}
-                                invalid={!!form.errors.startDate}
-                                onValueChange={(v) => onStartChange(form, v)} />
+                  <Field label="Type" reserveError={false}>
+                    <ToggleGroup type="single" variant="outline" size="sm" label="Type" class="type-choices"
+                                 value={form.type}
+                                 onValueChange={(v, details) => v ? form.type = v as TimeOffType : details.cancel()}>
+                      <ToggleGroupItem e:for={t of TYPES} value={t} class={`is-${t}`}>
+                        <span class="type-dot" aria-hidden="true"></span>
+                        {TYPE_LABELS[t]}
+                      </ToggleGroupItem>
+                    </ToggleGroup>
                   </Field>
-                  <Field label="Last day" error={form.errors.endDate?.[0] ?? ""} reserveError={false}>
-                    <DatePicker value={form.endDate} name="endDate" block required min={form.startDate}
-                                format={{ month: "short", day: "numeric", year: "numeric" }}
-                                invalid={!!form.errors.endDate} />
+
+                  <div class="date-pair">
+                    <Field label="First day" error={form.errors.startDate?.[0] ?? ""} reserveError={false}>
+                      <DatePicker value={form.startDate} name="startDate" block required
+                                  format={{ month: "short", day: "numeric", year: "numeric" }}
+                                  invalid={!!form.errors.startDate}
+                                  onValueChange={(v) => onStartChange(form, v)} />
+                    </Field>
+                    <Field label="Last day" error={form.errors.endDate?.[0] ?? ""} reserveError={false}>
+                      <DatePicker value={form.endDate} name="endDate" block required min={form.startDate}
+                                  format={{ month: "short", day: "numeric", year: "numeric" }}
+                                  invalid={!!form.errors.endDate} />
+                    </Field>
+                  </div>
+
+                  <Field reserveError={false}>
+                    <FieldLabel>Note <span class="text-ink-dim">(optional)</span></FieldLabel>
+                    <Textarea value={form.note} name="note" rows={2} maxlength={500}
+                              placeholder="Anything your manager should know" />
                   </Field>
-                </div>
 
-                <Field reserveError={false}>
-                  <FieldLabel>Note <span class="text-ink-dim">(optional)</span></FieldLabel>
-                  <Textarea value={form.note} name="note" rows={2} maxlength={500}
-                            placeholder="Anything your manager should know" />
-                </Field>
+                  <p class="request-preview">{previewText(form, mine.value.balances)}</p>
 
-                <p class="request-preview">{previewText(form, mine.value.balances)}</p>
-
-                <Button type="submit" variant="primary" block loading={form.busy}>Send request</Button>
-              </form>
-            </CardContent>
-          </Card>
+                  <Button type="submit" variant="primary" block loading={form.busy}>Send request</Button>
+                </form>
+              </CardContent>
+            </Card>
+          </section>
 
           <Card>
             <CardContent class="stack is-sm">
@@ -173,8 +175,8 @@ function previewText(form: FormState, balances: Balance[]): string {
                 Subscribe to this link in your calendar app to see your approved time off
                 there. Keep it private.
               </p>
-              <div class="feed-url">
-                <Input readonly value={feedUrl} size="sm" attrs={{ "aria-label": "Calendar feed url" }}
+              <div class="row gap-2">
+                <Input readonly value={feedUrl} size="sm" class="font-mono text-xs" attrs={{ "aria-label": "Calendar feed url" }}
                        onfocus={(e) => (e.target as HTMLInputElement).select()} />
                 <Button size="sm" onclick={() => onCopy(feedUrl, copied)}>{copied.value ? "Copied" : "Copy"}</Button>
               </div>
@@ -205,7 +207,7 @@ function previewText(form: FormState, balances: Balance[]): string {
 
 <BalanceCard (balance: Balance)>
   <Card class={`balance is-${balance.type}`}>
-    <CardContent class="stack">
+    <CardContent class="stack is-sm">
       <div class="row gap-2">
         <Badge dot class="type-pill">{TYPE_LABELS[balance.type]}</Badge>
       </div>
