@@ -3,7 +3,12 @@ import { redirect } from "@elements/app";
 import favicon from "#app/shared/assets/favicons/favicon.svg";
 import { signin, DEMO_PASSWORD } from "#app/shared/services/auth";
 import type { DemoLogin } from "#app/shared/services/auth";
-import { initials } from "#app/shared/format";
+import { Alert } from "@elements/ui/alert";
+import { Avatar } from "@elements/ui/avatar";
+import { Button } from "@elements/ui/button";
+import { Card, CardContent } from "@elements/ui/card";
+import { Field } from "@elements/ui/field";
+import { Input } from "@elements/ui/input";
 
 interface SigninForm {
   email: string;
@@ -79,38 +84,32 @@ export function groupByTeam(logins: DemoLogin[]): DemoTeam[] {
             <p class="text-ink-soft">Request time off, see your balance, and know who is out.</p>
           </div>
 
-          <div class="card signin-card">
-            <div class="card-body">
+          <Card class="signin-card">
+            <CardContent>
               <form class="stack" onsubmit={() => onSubmit(form)}>
-                <div e:if={form.error} class="callout is-danger" role="alert">{form.error}</div>
+                <Alert e:if={form.error} variant="danger" description={form.error} />
 
-                <div class="field">
-                  <label for="email">Email</label>
-                  <input id="email"
+                <Field label="Email" reserveError={false}>
+                  <Input type="email"
                          name="email"
-                         type="email"
                          value={form.email}
-                         autocomplete="email"
-                         autocapitalize="none"
-                         spellcheck={false}
                          placeholder="you@company.com"
-                         required>
-                </div>
+                         required
+                         attrs={{ id: "email", autocomplete: "email", autocapitalize: "none", spellcheck: "false" }} />
+                </Field>
 
-                <div class="field">
-                  <label for="password">Password</label>
-                  <input id="password"
+                <Field label="Password" reserveError={false}>
+                  <Input type="password"
                          name="password"
-                         type="password"
                          value={form.password}
-                         autocomplete="current-password"
-                         required>
-                </div>
+                         required
+                         attrs={{ id: "password", autocomplete: "current-password" }} />
+                </Field>
 
-                <button type="submit" class={["is-primary is-block", form.busy && "is-loading"]} disabled={form.busy}>Sign in</button>
+                <Button type="submit" variant="primary" block loading={form.busy}>Sign in</Button>
               </form>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
         <section e:if={logins.length} class="stack">
@@ -125,18 +124,18 @@ export function groupByTeam(logins: DemoLogin[]): DemoTeam[] {
             <div e:for={team of groupByTeam(logins)} class="demo-team stack is-sm">
               <p class="eyebrow">{team.name}'s team</p>
               <div class="demo-list">
-                <button e:for={login of team.people}
-                        type="button"
-                        title={login.email}
-                        class={["demo-login", login.role === "manager" && "is-manager"]}
+                <Button e:for={login of team.people}
+                        variant="outline"
+                        class={login.role === "manager" ? "demo-login is-manager" : "demo-login"}
                         disabled={form.busy}
+                        attrs={{ title: login.email }}
                         onclick={() => onPickDemo(form, login)}>
-                  <span class="demo-avatar" aria-hidden="true">{initials(login.name)}</span>
+                  <Avatar alt={login.name} size="sm" attrs={{ "aria-hidden": "true" }} />
                   <span class="demo-text">
                     <span class="demo-name">{login.name}</span>
                     <span class={["demo-email", login.role === "manager" && "is-role"]}>{login.role === "manager" ? "Manager" : login.email}</span>
                   </span>
-                </button>
+                </Button>
               </div>
             </div>
           </div>
