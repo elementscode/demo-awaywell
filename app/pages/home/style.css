@@ -67,30 +67,6 @@
   align-items: start;
 }
 
-.type-choices {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-2);
-}
-
-.type-choice {
-  justify-content: center;
-  gap: var(--space-1-5);
-}
-
-.type-choice.is-chosen {
-  background: var(--type-soft);
-  color: var(--type-ink);
-  border-color: var(--type);
-}
-
-.type-choice .pill-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-full);
-  background: var(--type);
-}
-
 .date-pair {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -154,17 +130,6 @@
   gap: var(--space-2);
 }
 
-.feed-url input {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-}
-
-.empty {
-  color: var(--ink-dim);
-  padding: var(--space-6) 0;
-  text-align: center;
-}
-
 @media (max-width: 56rem) {
   .home-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -209,7 +174,30 @@
   }
 }
 
-.date-pair input {
+/* the type choice: a ToggleGroup item tinted by its kind when chosen */
+.type-choices {
   width: 100%;
-  min-width: 0;
+}
+
+.type-choices .toggle-group-item {
+  flex: 1;
+  gap: var(--space-1-5);
+}
+
+.type-choices .toggle-group-item[data-state="on"] {
+  background: var(--type-soft);
+  color: var(--type-ink);
+  border-color: var(--type);
+}
+
+.type-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--type);
+}
+
+.feed-url .input {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
 }

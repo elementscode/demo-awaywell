@@ -4,7 +4,7 @@ import { Layout } from "#app/shared/templates/layout";
 import type { Person } from "#app/shared/services/auth";
 import { decideRequest, fetchApprovals, TYPE_LABELS } from "#app/shared/services/timeoff";
 import type { Approvals, PendingRequest, TimeOffRequest, RequestEvent } from "#app/shared/services/timeoff";
-import { formatRange, formatDays, initials, STATUS_PILLS } from "#app/shared/format";
+import { formatRange, formatDays, initials, STATUS_BADGES } from "#app/shared/format";
 
 interface Decision {
   comment: string;
@@ -103,7 +103,7 @@ function firstName(name: string): string {
                     <div>{o.userName}</div>
                     <div class="side-meta">{formatRange(o.startDate, o.endDate)} · {TYPE_LABELS[o.type]}</div>
                   </div>
-                  <span class={["pill", STATUS_PILLS[o.status]]}>{o.status}</span>
+                  <span class={["pill", `is-${STATUS_BADGES[o.status]}`]}>{o.status}</span>
                 </li>
               </ul>
             </div>

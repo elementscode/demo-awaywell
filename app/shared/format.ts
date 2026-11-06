@@ -1,3 +1,5 @@
+import type { BadgeVariant } from "@elements/ui/badge";
+
 /**
  * Dates here are calendar days as `YYYY-MM-DD` strings, never instants, so
  * they are parsed and formatted in UTC to keep a day from sliding across a
@@ -74,9 +76,10 @@ export function workingDaysBetween(start: string, end: string): number {
   return n;
 }
 
-export const STATUS_PILLS: Record<string, string> = {
-  pending: "is-warning",
-  approved: "is-success",
-  denied: "is-danger",
-  cancelled: "",
+/** The Badge variant for each request status. */
+export const STATUS_BADGES: Record<string, BadgeVariant> = {
+  pending: "warning",
+  approved: "success",
+  denied: "danger",
+  cancelled: "secondary",
 };

@@ -5,7 +5,18 @@ import { Layout } from "#app/shared/templates/layout";
 import type { Person } from "#app/shared/services/auth";
 import { submitRequest, cancelRequest, fetchMine, TYPES, TYPE_LABELS } from "#app/shared/services/timeoff";
 import type { Balance, TimeOffRequest, RequestEvent, RequestForm, TimeOffType } from "#app/shared/services/timeoff";
-import { formatRange, formatDays, formatDay, workingDaysBetween, toDay, STATUS_PILLS } from "#app/shared/format";
+import { formatRange, formatDays, workingDaysBetween, toDay, STATUS_BADGES } from "#app/shared/format";
+import { Alert } from "@elements/ui/alert";
+import { AlertDialog, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@elements/ui/alert-dialog";
+import { Badge } from "@elements/ui/badge";
+import { Button } from "@elements/ui/button";
+import { Card, CardContent } from "@elements/ui/card";
+import { DatePicker } from "@elements/ui/date-picker";
+import { Empty } from "@elements/ui/empty";
+import { Field, FieldLabel } from "@elements/ui/field";
+import { Input } from "@elements/ui/input";
+import { Textarea } from "@elements/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@elements/ui/toggle-group";
 
 export interface Mine {
   balances: Balance[];
@@ -43,17 +54,14 @@ function onSubmit(form: FormState, mine: { value: Mine }) {
   }
 }
 
-function onStartChange(form: FormState) {
-  if (!form.endDate || form.endDate < form.startDate) {
-    form.endDate = form.startDate;
+function onStartChange(form: FormState, start: string) {
+  form.startDate = start;
+  if (!form.endDate || form.endDate < start) {
+    form.endDate = start;
   }
 }
 
 function onCancel(r: TimeOffRequest, mine: { value: Mine }) {
-  if (!confirm(`Cancel your ${r.type} request for ${formatRange(r.startDate, r.endDate)}?`)) {
-    return;
-  }
-
   cancelRequest(r.id);
   mine.value = fetchMine();
 }
@@ -114,74 +122,64 @@ function previewText(form: FormState, balances: Balance[]): string {
 
       <div class="home-grid">
         <div class="stack is-lg">
-          <section class="card">
-            <div class="card-head">
-              <h2 class="section-title">Request time off</h2>
-            </div>
-            <div class="card-body">
+          <Card title="Request time off" level={2} attrs={{ "aria-label": "Request time off" }}>
+            <CardContent>
               <form class="stack" onsubmit={() => onSubmit(form, mine)}>
-                <div e:if={form.sent} class="callout is-success" role="status">{form.sent}</div>
-                <div e:if={form.error} class="callout is-danger" role="alert">{form.error}</div>
+                <Alert e:if={form.sent} variant="success" role="status" description={form.sent} />
+                <Alert e:if={form.error} variant="danger" description={form.error} />
 
-                <div class="field">
-                  <label>Type</label>
-                  <div class="type-choices" role="radiogroup" aria-label="Type">
-                    <button e:for={t of TYPES}
-                            id={t}
-                            type="button"
-                            role="radio"
-                            aria-checked={form.type === t ? "true" : "false"}
-                            class={["type-choice is-sm", `is-${t}`, form.type === t && "is-chosen"]}
-                            onclick={() => form.type = t}>
-                      <span class="pill-dot"></span>
+                <Field label="Type" reserveError={false}>
+                  <ToggleGroup type="single" variant="outline" size="sm" label="Type" class="type-choices"
+                               value={form.type}
+                               onValueChange={(v, details) => v ? form.type = v as TimeOffType : details.cancel()}>
+                    <ToggleGroupItem e:for={t of TYPES} value={t} class={`is-${t}`}>
+                      <span class="type-dot" aria-hidden="true"></span>
                       {TYPE_LABELS[t]}
-                    </button>
-                  </div>
-                </div>
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+                </Field>
 
                 <div class="date-pair">
-                  <div class="field">
-                    <label for="startDate">First day</label>
-                    <input id="startDate" name="startDate" type="date" value={form.startDate}
-                           class={[form.errors.startDate && "is-error"]}
-                           onchange={() => onStartChange(form)} required>
-                  </div>
-                  <div class="field">
-                    <label for="endDate">Last day</label>
-                    <input id="endDate" name="endDate" type="date" value={form.endDate} min={form.startDate}
-                           class={[form.errors.endDate && "is-error"]} required>
-                  </div>
+                  <Field label="First day" error={form.errors.startDate?.[0] ?? ""} reserveError={false}>
+                    <DatePicker value={form.startDate} name="startDate" block required
+                                format={{ month: "short", day: "numeric", year: "numeric" }}
+                                invalid={!!form.errors.startDate}
+                                onValueChange={(v) => onStartChange(form, v)} />
+                  </Field>
+                  <Field label="Last day" error={form.errors.endDate?.[0] ?? ""} reserveError={false}>
+                    <DatePicker value={form.endDate} name="endDate" block required min={form.startDate}
+                                format={{ month: "short", day: "numeric", year: "numeric" }}
+                                invalid={!!form.errors.endDate} />
+                  </Field>
                 </div>
 
-                <p e:if={form.errors.startDate} class="text-danger text-sm">{form.errors.startDate?.[0]}</p>
-                <p e:if={form.errors.endDate} class="text-danger text-sm">{form.errors.endDate?.[0]}</p>
-
-                <div class="field">
-                  <label for="note">Note <span class="text-ink-dim">(optional)</span></label>
-                  <textarea id="note" name="note" rows={2} value={form.note} maxlength={500}
-                            placeholder="Anything your manager should know"></textarea>
-                </div>
+                <Field reserveError={false}>
+                  <FieldLabel>Note <span class="text-ink-dim">(optional)</span></FieldLabel>
+                  <Textarea value={form.note} name="note" rows={2} maxlength={500}
+                            placeholder="Anything your manager should know" />
+                </Field>
 
                 <p class="request-preview">{previewText(form, mine.value.balances)}</p>
 
-                <button type="submit" class={["is-primary is-block", form.busy && "is-loading"]} disabled={form.busy}>Send request</button>
+                <Button type="submit" variant="primary" block loading={form.busy}>Send request</Button>
               </form>
-            </div>
-          </section>
+            </CardContent>
+          </Card>
 
-          <section class="card">
-            <div class="card-body stack is-sm">
+          <Card>
+            <CardContent class="stack is-sm">
               <h2 class="section-title">Calendar feed</h2>
               <p class="text-sm text-ink-soft">
                 Subscribe to this link in your calendar app to see your approved time off
                 there. Keep it private.
               </p>
               <div class="feed-url">
-                <input readonly value={feedUrl} aria-label="Calendar feed url" onfocus={(e) => (e.target as HTMLInputElement).select()}>
-                <button class="is-sm" onclick={() => onCopy(feedUrl, copied)}>{copied.value ? "Copied" : "Copy"}</button>
+                <Input readonly value={feedUrl} size="sm" attrs={{ "aria-label": "Calendar feed url" }}
+                       onfocus={(e) => (e.target as HTMLInputElement).select()} />
+                <Button size="sm" onclick={() => onCopy(feedUrl, copied)}>{copied.value ? "Copied" : "Copy"}</Button>
               </div>
-            </div>
-          </section>
+            </CardContent>
+          </Card>
         </div>
 
         <section class="home-lists stack is-lg">
@@ -190,7 +188,7 @@ function previewText(form: FormState, balances: Balance[]): string {
             <ul e:if={upcoming(mine.value.requests).length} class="request-list">
               <RequestRow e:for={r of upcoming(mine.value.requests)} request={r} {mine} />
             </ul>
-            <p e:else class="empty">Nothing booked yet.</p>
+            <Empty e:else description="Nothing booked yet." />
           </div>
 
           <div e:if={past(mine.value.requests).length} class="stack">
@@ -206,10 +204,10 @@ function previewText(form: FormState, balances: Balance[]): string {
 </html>
 
 <BalanceCard (balance: Balance)>
-  <div class={["card balance", `is-${balance.type}`]}>
-    <div class="card-body stack">
+  <Card class={`balance is-${balance.type}`}>
+    <CardContent class="stack">
       <div class="row gap-2">
-        <span class={["pill type-pill", `is-${balance.type}`]}><span class="pill-dot"></span>{TYPE_LABELS[balance.type]}</span>
+        <Badge dot class="type-pill">{TYPE_LABELS[balance.type]}</Badge>
       </div>
       <div class="balance-left">{balance.remainingDays}<small>of {balance.allowanceDays} days left</small></div>
       <div class="balance-bar" aria-hidden="true">
@@ -217,8 +215,8 @@ function previewText(form: FormState, balances: Balance[]): string {
         <span class="is-pending" style={`width: ${Math.min(100, balance.pendingDays / balance.allowanceDays * 100)}%`}></span>
       </div>
       <div class="balance-meta">{balance.usedDays} used · {balance.pendingDays} pending</div>
-    </div>
-  </div>
+    </CardContent>
+  </Card>
 </BalanceCard>
 
 <RequestRow (request: TimeOffRequest, mine: { value: Mine })>
@@ -232,8 +230,17 @@ function previewText(form: FormState, balances: Balance[]): string {
       <div e:if={request.decisionComment} class="request-comment">“{request.decisionComment}”</div>
     </div>
     <div class="request-side stack is-xs">
-      <span class={["pill", STATUS_PILLS[request.status]]}><span class="pill-dot"></span>{request.status}</span>
-      <button e:if={request.status === "pending"} class="is-ghost is-sm" onclick={() => onCancel(request, mine)}>Cancel</button>
+      <Badge variant={STATUS_BADGES[request.status]} dot>{request.status}</Badge>
+      <AlertDialog e:if={request.status === "pending"}
+                   size="sm"
+                   title="Cancel this request?"
+                   description={`Cancel your ${request.type} request for ${formatRange(request.startDate, request.endDate)}?`}>
+        <Button slot="trigger" variant="ghost" size="sm">Cancel</Button>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Keep it</AlertDialogCancel>
+          <AlertDialogAction variant="danger" onclick={() => onCancel(request, mine)}>Cancel request</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialog>
     </div>
   </li>
 </RequestRow>
