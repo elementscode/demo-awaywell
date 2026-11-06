@@ -6,6 +6,8 @@
 
 Request time off, approve it with a comment, track balances by type, and see who is out on a live team calendar with .ics feeds.
 
+Awaywell uses the `default` theme from @elements/ui.
+
 [Run this app on your machine](https://elements.dev/demos/01a0f3a8-3881-7fd5-9f2e-8272c870a636). Use this demo as inspiration, or as the starting point for your own app. Your agent creates a new app with this one as the scaffold, and you prompt it to add whatever features you want.
 
 ## How it's built
