@@ -16,8 +16,6 @@
     --accent-soft: var(--brand-50);
     --accent-ink: var(--white);
     --accent-edge: var(--brand-200);
-    --link-c: 0.095;
-    --link-h: 190;
 
     /* one color per kind of time off: a solid for dots and bars, a soft fill,
        and an ink that reads on the soft fill */
